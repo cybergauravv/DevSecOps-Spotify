@@ -1,0 +1,27 @@
+# Dependencies
+node_modules
+npm-debug.log
+
+# Build output
+dist
+coverage
+
+# Development files
+.git
+.gitignore
+README.md
+.env*
+*.log
+.vscode
+.idea
+
+# Test files
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
+**/*.spec.tsx
+
+# CI/CD
+Jenkinsfile
+.github
+sonar-project.properties
