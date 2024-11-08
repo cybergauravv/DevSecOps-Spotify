@@ -14,7 +14,6 @@
     "noUnusedParameters": false,
     "noFallthroughCasesInSwitch": true,
     "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
     "outDir": "./dist",
     "allowJs": true,
     "noEmit": true
@@ -22,3 +21,4 @@
   "include": ["src"],
   "exclude": ["node_modules", "dist"]
 }
+    
