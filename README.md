@@ -40,7 +40,7 @@ src="./Images/devsecops-project.png" alt="devsecops project" width="1200"/>
 ## Pipeline Stages:
 
 <img style="display:block; margin:0 auto;" 
-src="./Images/pipeline-stages.png" alt="pipeline stages" width="1200"/>
+src="./Images/jenkins-pipeline-stages.png" alt="jenkins pipeline stages" width="1200"/>
 
 ---
 
@@ -597,4 +597,40 @@ post {
 
 > ### This Jenkins pipeline automates the CI/CD process for the Spotify-Clone application, ensuring code quality, security, and deployment through a series of well-defined stages. This pipeline ensures that the Spotify-Clone application is built, tested for quality and security, and deployed efficiently, with notifications sent to stakeholders after each build.
 
+---
 
+## Monitor running Build
+
+### To monitor a running build in Jenkins, you can utilize the Pipeline Stage View, Pipeline console view and the Console Output features. Jenkins updates the build status to indicate whether the build was successful, unstable, or failed. This status is visible in the build history and on the main job page.
+
+
+> ### Once build is completed in Jenkins, the system updates the build status, executes defined post-build actions, sends notifications, archives artifacts.
+
+<img style="display:block; margin:0 auto;" 
+src="./Images/pipeline-successful.png" alt="pipeline successful" width="1200"/>
+
+### You will receive an email trigger with the defined reports but if you wish to check your SonarQube Analysis you can check on your SonarQube server under Projects. You can work further on remediation of any triggered vulnerabilities, bugs or code smells.
+
+<img style="display:block; margin:0 auto;" 
+src="./Images/sonar-report.png" alt="sonar report" width="1200"/>
+
+### Post actions view on Pipeline console
+
+<img style="display:block; margin:0 auto;" 
+src="./Images/post-actions.png" alt="post actions" width="1200"/>
+
+### Successful stages view
+
+<img style="display:block; margin:0 auto;" 
+src="./Images/pipeline-stages.png" alt="pipeline stages" width="1200"/>
+
+---
+
+## Congratulations! Your Spotify-Clone application is now live and ready for you to explore.
+
+###  Accessing Your Application:
+  * Open Your Browser and Enter the URL `http://http://<your-Instance-IP>:3000`
+  * Press `Enter` and watch as your ` Spotify-Clone ` application comes to life!
+
+<img style="display:block; margin:0 auto;" 
+src="./Images/app-running.png" alt="app running" width="1200"/>
