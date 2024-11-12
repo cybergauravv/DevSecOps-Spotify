@@ -357,7 +357,9 @@ sudo cat /var/lib/jenkins/secrets/initialAdminPassword
 
 ## System Configuration on Jenkins
 
-### In this part of configiration we will configiure "SonarQube Installations" ` and ` "Extended E-mail Notification" ` part.
+### In this part of configuration we will configure "SonarQube Installations" ` and ` "Extended E-mail Notification" ` part.
+
+### SonarQube Installations Configuration:
 
   * #### Navigate to ` "Manage Jenkins" ` > ` "System" `
   * #### Scroll down to the ` "SonarQube Installations" ` section > Click ` "Add SonarQube" `
@@ -366,4 +368,231 @@ sudo cat /var/lib/jenkins/secrets/initialAdminPassword
        * #### URL: `http://<your-Instance-IP>:9000`
        * #### In the ` "Server Authentication Token" ` field, from dropdown select the stored token you created earlier.
        * #### Click ` "Apply" `
-  
+   
+  > ### This setup allows Jenkins to communicate with SonarQube for project analysis and reporting.
+
+### Extended E-mail Notification Configuration:
+
+  * #### Scroll down to the ` "Extended E-mail Notification" ` section.
+  * #### Configure SMTP Server Settings:
+       * #### SMTP Server: `smtp.gmail.com`
+       * #### SMTP Port: `465`
+  * #### Click ` "Advanced" ` option > ` "Credentials" `
+       * #### In the "Credentials" dropdown, select the stored mail credentials that you previously added to Jenkins. If you haven't added them yet, you need to create them first (this typically includes your Gmail address and an app password if using 2-Step Verification).
+       * Check ` "Use SSL" ` and ` "Use OAuth 2.0" `.
+  * #### Set ` "Default Triggers" ` as per your requirement.
+  * #### Scroll down to ` "Email Notification" ` section.
+  * #### Fill exact same details to test the configuration by sending email. *(In password, paste the password you created on app and not your gmail account password)*
+  * #### Click ` "Apply" ` & ` "Save" `.
+
+> ### This setup will allow Jenkins to send email notifications using your Gmail account.
+
+---
+
+## Configure Jenkins Pipeline
+
+  * #### On the Jenkins dashboard, click on  ` "New Item" ` in the left sidebar.
+  * #### Enter Item `Name:` `Spotify-clone` and Select option `Pipeline` > Click `OK`
+  * #### On Configure section Select `pipeline` and paste below script:
+
+```
+pipeline {
+agent any
+
+environment {
+    DOCKER_IMAGE = 'your-dockerhub-username/spotify-clone'
+    DOCKER_TAG = "${BUILD_NUMBER}"
+    SONAR_PROJECT_KEY = 'spotify-clone'
+    REGISTRY_CREDENTIALS = credentials('dockerhub-cred')
+    DEPENDENCY_CHECK_REPORT = 'dependency-check-report.xml'
+    SCANNER_HOME = tool 'SonarScanner'
+    PATH = "$SCANNER_HOME/bin:$PATH"
+}
+
+tools {
+    nodejs 'NodeJS 20.x'
+}
+
+stages {
+    stage("Clean Workspace") {
+        steps {
+            cleanWs()
+        }
+    }
+
+    stage('Git Checkout') {
+        steps {
+            git branch: 'main', url: 'https://github.com/cybergauravv/testing-dev.git'
+        }
+    }
+
+    stage('Install Dependencies') {
+        steps {
+            sh 'npm ci --verbose'
+        }
+    }
+
+    stage('SonarQube Analysis') {
+        steps {
+            withSonarQubeEnv('SonarQube') {
+                sh """
+                    sonar-scanner \
+                    -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
+                    -Dsonar.sources=src \
+                    -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+                """
+            }
+        }
+    }
+
+    stage('Quality Gate') {
+        steps {
+            timeout(time: 5, unit: 'MINUTES') {
+                waitForQualityGate abortPipeline: true
+            }
+        }
+    }
+
+    stage('OWASP Dependency Check') {
+        steps {
+            dependencyCheck additionalArguments: '''
+                --scan ./ 
+                --format HTML 
+                --format XML 
+                --prettyPrint
+                --disableYarnAudit
+                --disableNodeAudit
+                ''',
+                odcInstallation: 'OWASP-DC'
+            
+            dependencyCheckPublisher pattern: DEPENDENCY_CHECK_REPORT
+            archiveArtifacts artifacts: DEPENDENCY_CHECK_REPORT, allowEmptyArchive: true
+        }
+    }
+
+    stage('Trivy File Scan') {
+        steps {
+            sh "trivy fs . > trivy.txt"
+        }    
+    }            
+ 
+
+    stage('Build Docker Image') {
+        steps {
+            script {
+                timeout(time: 5, unit: 'MINUTES') {
+                    docker.build("${DOCKER_IMAGE}:${DOCKER_TAG}")
+                }
+            }
+        }
+    }
+
+    stage('Push to DockerHub') {
+        steps {
+            script {
+                timeout(time: 5, unit: 'MINUTES') {
+                    docker.withRegistry('https://registry.hub.docker.com', 'dockerhub-cred') {
+                        def image = docker.image("${DOCKER_IMAGE}:${DOCKER_TAG}")
+                        image.push()
+                        image.push('latest')
+                    }
+                }
+            }
+        }
+    }
+
+    stage('Docker Scout Scan') {
+       steps {
+            timeout(time: 5, unit: 'MINUTES') {
+                withCredentials([string(credentialsId: 'docker-pat', variable: 'DOCKER_PAT')]) {
+                    sh "echo $DOCKER_PAT | docker login -u cybersenseii --password-stdin"
+                    sh """
+                       docker-scout quickview ${DOCKER_IMAGE}:${DOCKER_TAG}
+                       docker-scout cves ${DOCKER_IMAGE}:${DOCKER_TAG} --only-severity critical,high
+                       docker-scout recommendations ${DOCKER_IMAGE}:${DOCKER_TAG}
+                    """       
+                }    
+            }    
+        }    
+    }    
+    
+    
+    stage('Deploy to Container') {
+        steps {
+            script {
+                timeout(time: 5, unit: 'MINUTES') {
+                    try {
+                        sh """
+                            docker stop spotify-clone || true
+                            docker rm spotify-clone || true
+                            docker pull ${DOCKER_IMAGE}:${DOCKER_TAG}
+                            docker run -d \
+                                --name spotify-clone \
+                                --restart unless-stopped \
+                                -p 3000:3000 \
+                                ${DOCKER_IMAGE}:${DOCKER_TAG}
+                        """
+                    } catch (Exception e) {
+                        currentBuild.result = 'FAILURE'
+                        error "Deployment failed: ${e.message}"
+                    }
+                }
+            }
+        }
+    }
+}
+
+post {
+    always {
+        script {
+            def sonarqubeUrl = ''
+            withSonarQubeEnv('SonarQube') {
+                sonarqubeUrl = env.SONAR_HOST_URL
+            }
+            
+            emailext (
+                subject: "Pipeline Status: ${currentBuild.result}",
+                body: """
+                    <html>
+                        <body>
+                            <h2>Build Status: ${currentBuild.result}</h2>
+                            <h3>Build Details:</h3>
+                            <ul>
+                                <li>Build Number: ${BUILD_NUMBER}</li>
+                                <li>Build URL: ${BUILD_URL}</li>
+                            </ul>
+                            
+                            <h3>Security Reports:</h3>
+                            <p>Please find the attached security scan reports (if generated).</p>
+                            
+                            <h3>SonarQube Results:</h3>
+                            <p>View the SonarQube analysis results <a href='${sonarqubeUrl}/dashboard?id=${SONAR_PROJECT_KEY}'>here</a>.</p>
+                            
+                            <h4>Build Logs:</h4>
+                            <p>To view the full build logs, please check the build URL provided above.</p>
+                        </body>
+                    </html>
+                """,
+                to: 'your-email-here',
+                attachmentsPattern: "**/${DEPENDENCY_CHECK_REPORT}, **/trivy.txt",
+                mimeType: 'text/html'
+            )
+        }
+        
+        cleanWs()
+        sh 'docker system prune -f'
+    }
+    success {
+        echo 'Pipeline completed successfully!'
+    }
+    failure {
+        echo 'Pipeline failed!'
+    }
+}
+}
+```
+
+  * #### Click ` "Save" ` & ` "Apply" `
+  * #### Click Build Now 
+
+    
