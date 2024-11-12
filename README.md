@@ -96,7 +96,9 @@ src="./Images/jenkins-pipeline-stages.png" alt="jenkins pipeline stages" width="
 
 > ### Note: 
       Jenkins will run on port 8080
+      
       SonarQube will run on port 9000
+      
       Spotify-Clone will run on port 3000
 
 
@@ -111,7 +113,9 @@ src="./Images/jenkins-pipeline-stages.png" alt="jenkins pipeline stages" width="
 
        ```
        cd </path/to/your-key-file.pem>
+       
        chmod 400 <your-key-pair.pem>
+       
        ssh -i /path/to/your-key-file.pem ubuntu@<your-instance-ip>
        ```
  > #### Replace /path/to/your-key-file.pem with the actual path to your downloaded key file and <your-instance-ip> with the public IP address of your instance.
@@ -187,8 +191,11 @@ curl -sSfL https://raw.githubusercontent.com/docker/scout-cli/main/install.sh | 
 * #### After successful installations, verify all the tools:
 ```
 aws --version
+
 jenkins --version
+
 docker --version
+
 trivy --version
 ```
 ---
@@ -629,8 +636,10 @@ src="./Images/pipeline-stages.png" alt="pipeline stages" width="1200"/>
 ## Congratulations! Your Spotify-Clone application is now live and ready for you to explore.
 
 ###  Accessing Your Application:
-  * Open Your Browser and Enter the URL `http://http://<your-Instance-IP>:3000`
+  * Open Your Browser and Enter the URL `http://<your-Instance-IP>:3000`
   * Press `Enter` and watch as your ` Spotify-Clone ` application comes to life!
 
 <img style="display:block; margin:0 auto;" 
 src="./Images/app-running.png" alt="app running" width="1200"/>
+
+---
