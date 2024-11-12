@@ -29,9 +29,9 @@ src="./Images/devsecops-project.png" alt="devsecops project" width="1200"/>
 
  * **AWS Account:** Required for deploying the application on AWS.
 
- * **Github Account** For collaboration on the project.
+ * **Github Account:** For collaboration on the project.
 
- * **Dockerhub Account** Necessary for storing and managing Docker images.
+ * **Dockerhub Account:** Necessary for storing and managing Docker images.
 
  * **Git Bash Terminal:** If you are using Windows 10/11 to ssh to AWS instance, Git Bash is recommended for executing command-line operations.
 ---
@@ -208,6 +208,8 @@ docker ps
 CONTAINER ID   IMAGE                    COMMAND                  CREATED          STATUS          PORTS                    NAMES
 <container_id> sonarqube:lts-community   "/bin/sh -c 'exec ...'" 10 seconds ago   Up 10 seconds   0.0.0.0:9000->9000/tcp   sonarqube
 ```
+> ### SonarQube sometimes takes a bit on Maintenance page to fully load, Meanwhile let's configure Jenkins.
+
 ---
 
 ## Jenkins Configuration
@@ -261,17 +263,107 @@ sudo cat /var/lib/jenkins/secrets/initialAdminPassword
   
 ## Credentials Setup On Jenkins
 
-### Steps to add credentials in Jenkins under the Credentials section, specifically for DockerHub, Docker Personal Access Token (PAT), and email credentials:
+### Steps to add credentials in Jenkins under the Credentials section, specifically for `DockerHub` and `Docker Personal Access Token (PAT)`, `SonarQube Token` and `Email-Notifications`.
 
 * #### Click on ` "Manage Jenkins" ` > ` "Credentials". `
 * #### Under "Stores scoped to Jenkins," click on the ` "global" ` domain to add global credentials.
-* #### Click on ` "Add Credentials". `
+* #### Click on ` "Add Credentials". ` (To Add Dockerhub Credentials)
 
   
-  * Kind: Select `Username with password.`
-  * Scope: Leave as `Global (default).`
-  * Username: Enter your `DockerHub username.`
-  * Password: Enter your `DockerHub password.`
-  * ID: Enter `dockerhub-cred.`
-  * Description: Enter `DockerHub Authentication.`
-* Click `Create.`
+  * **Kind:** Select `Username with password.`
+  * **Scope:** Leave as `Global (default).`
+  * **Username:** Enter your `DockerHub username.`
+  * **Password:** Enter your `DockerHub password.`
+  * **ID:** Enter `dockerhub-cred.`
+  * **Description:** Enter `DockerHub Authentication.`
+* #### Click `Create.`
+
+* #### Again, Click on ` "Add Credentials". ` (To Add Docker PAT)
+
+  * **Kind:** Select `Secret Text`
+  * **Scope:** Leave as `Global (default).`
+  * **ID:** Enter `docker-pat.`
+  * **Secret:** Enter your `Personal Access Token`
+  * **Description:** Enter `Docker PAT.`
+* #### Click `Create.`
+
+* #### We will implement email notifications in Jenkins using a Gmail account, configuring an app password for secure SMTP authentication to notify the status of pipeline results. Follow [Blog](https://medium.com/@soorajswtester/setting-up-app-password-in-gmail-for-jenkins-integration-7fcc780c5a78#:~:text=your%20Google%20Account.-,Navigate%20to%20the%20%E2%80%9CSecurity%E2%80%9D%20section.,e.g.%2C%20%E2%80%9CJenkins%E2%80%9D).
+* #### Similarly Create & Add your email credentials with Username and Password. 
+
+
+
+> ### Note: We will add Credentials for SonarQube Authentication Token as we progress in this project.
+
+## Configure Tools on Jenkins 
+
+### Steps to Configure Tools in Jenkins:
+  * #### Click on ` "Manage Jenkins." ` > ` "Tools" `
+  * #### Add Tools based on below Table:
+
+| Tool                       | Name                                                          | Version               | Installation Method                |
+|----------------------------|---------------------------------------------------------------|-----------------------|------------------------------------|
+| JDK Installation           | JDK17 - Automatic Install - from adoptium.net                | 17.8.1+1              | Automatic Install                  |
+| SonarQube Scanner          | SonarQube Scanner                                             | Latest                | Automatic Install                  |
+| NodeJS                     | NodeJS 20.x                                                  | 20.9.0                | Automatic Install                  |
+| OWASP Dependency-Check     | OWASP-DC                                                     | Latest                | Install from GitHub               |
+| Docker                     | Docker                                                       | Latest                | Automatic Install from docker.com  |
+
+  * Click ` "Apply" ` & ` "Save" `
+
+> ### In Jenkins, the "System Configuration" section is where global settings and paths are defined to manage the overall behavior and environment of Jenkins. This configuration will be addressed in detail later in this project, following the completion of the SonarQube configuration setup.
+
+---
+## SonarQube Configuration:
+
+### Access SonarQube
+
+  * #### Open your web browser and navigate to your SonarQube instance `http://<your-Instance_IP>:9000`.
+  * #### Use the default credentials to log in:
+       Username: `admin` ,
+       Password: `admin`
+  * #### After logging in, you will be prompted to change the default password. Enter a new password and confirm it > Click on ` "Update" ` to save the new credentials.
+
+### Create a New Project:
+
+  * #### Click on the "Projects" tab in the top navigation bar.
+  * #### Click on "Create Project" or the "+" icon to start creating a new project.
+  * #### In the "Create Project" page, enter the following details:
+      **Project Key**: `spotify-clone` ,
+      **Project Name**: `Spotify-clone`
+  * #### Click ` "Finish" `
+
+### Create a User Token:
+
+  * #### Click on the ` "Administration" ` tab in the top navigation bar.
+  * #### Select ` "Security" ` > Locate and click the "User Tokens" section. *(You may find it under the "3 Dots" menu next to the Administrator user)*.
+  * #### In the dialog that appears, enter the name for your token:
+    * **Token Name:** `sonarqube-token`
+  * #### Click on `"Generate"` to create the token.
+  * #### Make sure to copy and store the generated token immediately, as it will not be displayed again and will be used for authentication in your CI/CD processes
+
+> ### Go back to `Jenkins` > `Manage Jenkins` > `Credentials` > `Add Credentials` and store generated SonarQube token as `Secret Text` with Name: `sonarqube-token`.
+
+### Configure Webhook in SonarQube:
+
+  * #### Navigate to ` "Administration" ` > ` "Configuration" ` > ` "Webhooks" `
+  * #### Click ` "Create" `
+  * #### Provide a name for your webhook (e.g., Jenkins Webhook)
+  * #### Enter the URL for your Jenkins webhook endpoint. This typically looks like:
+    #### `http://<your-Instance-IP>:8080/sonarqube-webhook/`
+  * #### Leave `Secret` field empty if you do not want to use a secret.
+  * #### Click ` "Create" `
+    
+---
+
+## System Configuration on Jenkins
+
+### In this part of configiration we will configiure "SonarQube Installations" ` and ` "Extended E-mail Notification" ` part.
+
+  * #### Navigate to ` "Manage Jenkins" ` > ` "System" `
+  * #### Scroll down to the ` "SonarQube Installations" ` section > Click ` "Add SonarQube" `
+  * Enter SonarQube Details:
+       * #### Name: `SonarQube`
+       * #### URL: `http://<your-Instance-IP>:9000`
+       * #### In the ` "Server Authentication Token" ` field, from dropdown select the stored token you created earlier.
+       * #### Click ` "Apply" `
+  
