@@ -643,3 +643,32 @@ src="./Images/pipeline-stages.png" alt="pipeline stages" width="1200"/>
 src="./Images/app-running.png" alt="app running" width="1200"/>
 
 ---
+
+<h2 align="center">🎵 Thank You for Exploring Our DevSecOps Spotify-Clone Project! 🎵</h2>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Made%20with-❤️-ff69b4.svg" alt="Made with Love">
+  <img src="https://img.shields.io/badge/Powered%20by-DevSecOps-blue.svg" alt="Powered by DevSecOps">
+  <img src="https://img.shields.io/badge/Secured%20with-🛡️-success.svg" alt="Secured">
+</p>
+
+<p align="center">
+  <strong>🚀 Your journey through our DevSecOps pipeline has been music to our ears! 🎧</strong>
+</p>
+
+<p align="center">
+  We hope this project has struck a chord with you and amplified your understanding of DevSecOps practices.
+</p>
+
+<p align="center">
+  <em>Keep the DevSecOps rhythm going and may your code always be in harmony!</em>
+</p>
+
+<p align="center">
+  <a href="https://github.com/cybergauravv/DevSecOps-Spotify/issues">Report Bug</a> •
+  <a href="https://github.com/cybergauravv/DevSecOps-Spotify/issues">Request Feature</a>
+</p>
+
+<p align="center">
+  <sub>Don't forget to leave a ⭐️ if you found this useful!</sub>
+</p>
