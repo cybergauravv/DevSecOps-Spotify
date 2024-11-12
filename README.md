@@ -1,5 +1,5 @@
 <img style="display:block; margin:0 auto;" 
-src="./Images/spotify.png" alt="spotify" width="1200"/>
+src="./Images/devsecops-project.png" alt="devsecops project" width="1200"/>
 ---
 
 # DevSecOps using Spotify-Clone
