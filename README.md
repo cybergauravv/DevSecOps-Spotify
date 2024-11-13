@@ -429,7 +429,7 @@ stages {
 
     stage('Git Checkout') {
         steps {
-            git branch: 'main', url: 'https://github.com/cybergauravv/testing-dev.git'
+            git branch: 'main', url: 'https://github.com/cybergauravv/DevSecOps-Spotify.git'
         }
     }
 
