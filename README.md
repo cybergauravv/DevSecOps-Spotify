@@ -250,7 +250,7 @@ sudo cat /var/lib/jenkins/secrets/initialAdminPassword
 
 ## Install Plugins in Jenkins
 
-* #### From the Jenkins dashboard, locate the left-hand sidebar, Click on ` "Menage Jenkins" ` > ` "Plugins" ` > ` "Available Plugins". `
+* #### From the Jenkins dashboard, locate the left-hand sidebar, Click on ` "Manage Jenkins" ` > ` "Plugins" ` > ` "Available Plugins". `
 * #### Use the search box to find each of the following plugins one by one:
     * `Eclipse Temurin`
     * `SonarQube Scanner`
