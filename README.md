@@ -2,7 +2,7 @@
 src="./Images/devsecops-project.png" alt="devsecops project" width="1200"/>
 ---
 
-# DevSecOps using Spotify-Clone
+# Deploying Spotify-Clone Application on AWS using DevSecOps Approach
 ---
 
 ## Project Overview
